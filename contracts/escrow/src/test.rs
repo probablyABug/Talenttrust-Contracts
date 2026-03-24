@@ -1,4 +1,6 @@
-use soroban_sdk::{symbol_short, testutils::Address as _, testutils::Ledger as _, vec, Address, Env, String};
+use soroban_sdk::{
+    symbol_short, testutils::Address as _, testutils::Ledger as _, vec, Address, Env, String,
+};
 
 use crate::{ContractStatus, DataKey, DisputeError, Escrow, EscrowClient};
 
