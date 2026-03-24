@@ -9,7 +9,11 @@ fn setup(env: &Env) -> (EscrowClient<'_>, Address, Address) {
     let contract_addr = env.register(Escrow, ());
     let client_addr = Address::generate(env);
     let freelancer_addr = Address::generate(env);
-    (EscrowClient::new(env, &contract_addr), client_addr, freelancer_addr)
+    (
+        EscrowClient::new(env, &contract_addr),
+        client_addr,
+        freelancer_addr,
+    )
 }
 
 fn default_milestones(env: &Env) -> Vec<i128> {

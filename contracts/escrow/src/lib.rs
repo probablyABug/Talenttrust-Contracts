@@ -80,7 +80,10 @@ impl Escrow {
         let mut milestones: Vec<Milestone> = Vec::new(&env);
         for i in 0..milestone_amounts.len() {
             let amount = milestone_amounts.get(i).unwrap();
-            milestones.push_back(Milestone { amount, released: false });
+            milestones.push_back(Milestone {
+                amount,
+                released: false,
+            });
         }
 
         let record = ContractRecord {
@@ -90,7 +93,9 @@ impl Escrow {
             status: ContractStatus::Created,
         };
 
-        env.storage().persistent().set(&DataKey::Contract(id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Contract(id), &record);
         env.storage().persistent().set(&DataKey::NextId, &id);
 
         id
