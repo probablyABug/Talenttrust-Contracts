@@ -390,11 +390,11 @@ fn test_reputation_only_for_completed_contract_not_other() {
 #[test]
 fn test_each_contract_gets_independent_reputation_flag() {
     let env = Env::default();
-    let (client, cid1) = completed_contract(&env, 1);
-    let (_, cid2) = completed_contract(&env, 1);
+    let (client1, cid1) = completed_contract(&env, 1);
+    let (client2, cid2) = completed_contract(&env, 1);
 
-    assert!(client.issue_reputation(&cid1, &5));
-    assert!(client.issue_reputation(&cid2, &3));
+    assert!(client1.issue_reputation(&cid1, &5));
+    assert!(client2.issue_reputation(&cid2, &3));
 }
 
 // Deposit / release on non-existent contract.
