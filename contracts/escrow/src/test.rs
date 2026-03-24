@@ -1,47 +1,59 @@
-use soroban_sdk::{symbol_short, testutils::Address as _, vec, Address, Env};
+extern crate std;
+
+use std::panic::{catch_unwind, AssertUnwindSafe};
+
+use soroban_sdk::{testutils::Address as _, vec, Address, Env, Vec};
 
 use crate::{Escrow, EscrowClient};
 
-#[test]
-fn test_hello() {
-    let env = Env::default();
-    let contract_id = env.register(Escrow, ());
-    let client = EscrowClient::new(&env, &contract_id);
+mod client_migration;
+mod hello;
+mod lifecycle;
+mod security;
 
-    let result = client.hello(&symbol_short!("World"));
-    assert_eq!(result, symbol_short!("World"));
+pub(super) struct Parties {
+    pub client: Address,
+    pub freelancer: Address,
+    pub replacement_client: Address,
 }
 
-#[test]
-fn test_create_contract() {
+pub(super) fn setup_env() -> Env {
     let env = Env::default();
-    let contract_id = env.register(Escrow, ());
-    let client = EscrowClient::new(&env, &contract_id);
-
-    let client_addr = Address::generate(&env);
-    let freelancer_addr = Address::generate(&env);
-    let milestones = vec![&env, 200_0000000_i128, 400_0000000_i128, 600_0000000_i128];
-
-    let id = client.create_contract(&client_addr, &freelancer_addr, &milestones);
-    assert_eq!(id, 1);
+    env.mock_all_auths();
+    env
 }
 
-#[test]
-fn test_deposit_funds() {
-    let env = Env::default();
+pub(super) fn register_escrow<'a>(env: &'a Env) -> EscrowClient<'a> {
     let contract_id = env.register(Escrow, ());
-    let client = EscrowClient::new(&env, &contract_id);
-
-    let result = client.deposit_funds(&1, &1_000_0000000);
-    assert!(result);
+    EscrowClient::new(env, &contract_id)
 }
 
-#[test]
-fn test_release_milestone() {
-    let env = Env::default();
-    let contract_id = env.register(Escrow, ());
-    let client = EscrowClient::new(&env, &contract_id);
+pub(super) fn sample_parties(env: &Env) -> Parties {
+    Parties {
+        client: Address::generate(env),
+        freelancer: Address::generate(env),
+        replacement_client: Address::generate(env),
+    }
+}
 
-    let result = client.release_milestone(&1, &0);
-    assert!(result);
+pub(super) fn sample_milestones(env: &Env) -> Vec<i128> {
+    vec![env, 200_0000000_i128, 400_0000000_i128, 600_0000000_i128]
+}
+
+pub(super) fn create_sample_contract(env: &Env, client: &EscrowClient<'_>) -> (Parties, u32) {
+    let parties = sample_parties(env);
+    let milestones = sample_milestones(env);
+    let contract_id = client.create_contract(&parties.client, &parties.freelancer, &milestones);
+    (parties, contract_id)
+}
+
+pub(super) fn full_funding_amount() -> i128 {
+    1_200_0000000
+}
+
+pub(super) fn assert_panics<F>(f: F)
+where
+    F: FnOnce(),
+{
+    assert!(catch_unwind(AssertUnwindSafe(f)).is_err());
 }
