@@ -11,6 +11,22 @@ pub enum ContractStatus {
     Disputed = 3,
 }
 
+#[derive(Clone)]
+#[contracttype]
+pub enum DataKey {
+    Admin,
+    Arbitrator,
+}
+
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum Error {
+    NotAuthorized = 1,
+    ArbitratorAlreadySet = 2,
+    ArbitratorNotFound = 3,
+}
+
 #[contracttype]
 #[derive(Clone, Debug)]
 pub struct Milestone {
@@ -89,4 +105,36 @@ pub fn release_payment(env: Env, amount: i128) -> Result<(), Error> {
 
     // Update state...
     Ok(())
+}
+
+pub struct EscrowContract;
+
+#[contractimpl]
+impl EscrowContract {
+    /// Assigns a new arbitrator. Only callable by Admin.
+    pub fn set_arbitrator(env: Env, new_arbitrator: Address) -> Result<(), Error> {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
+
+        env.storage().instance().set(&DataKey::Arbitrator, &new_arbitrator);
+        
+        // Emit event for transparency
+        env.events().publish((symbol_short!("arb_set"),), new_arbitrator);
+        Ok(())
+    }
+
+    /// Revokes the current arbitrator. Only callable by Admin.
+    pub fn revoke_arbitrator(env: Env) -> Result<(), Error> {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
+
+        if !env.storage().instance().has(&DataKey::Arbitrator) {
+            return Err(Error::ArbitratorNotFound);
+        }
+
+        env.storage().instance().remove(&DataKey::Arbitrator);
+        
+        env.events().publish((symbol_short!("arb_rev"),), ());
+        Ok(())
+    }
 }

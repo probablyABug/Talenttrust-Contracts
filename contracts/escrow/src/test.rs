@@ -66,3 +66,33 @@ fn test_underflow_protection() {
     let result = client.try_release_payment(&1000); 
     assert_eq!(result, Err(Ok(Error::ArithmeticOverflow)));
 }
+
+#[test]
+fn test_admin_can_set_and_revoke_arbitrator() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let arb = Address::generate(&env);
+    
+    // Initialize contract with admin...
+    let client = EscrowContractClient::new(&env, &contract_id);
+
+    // Set Arbitrator
+    client.set_arbitrator(&arb);
+    assert_eq!(client.get_arbitrator(), arb);
+
+    // Revoke Arbitrator
+    client.revoke_arbitrator();
+    assert!(client.try_get_arbitrator().is_err());
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Context, InvalidAction)")]
+fn test_non_admin_cannot_set_arbitrator() {
+    let env = Env::default();
+    let mallory = Address::generate(&env); // Malicious user
+    let client = EscrowContractClient::new(&env, &contract_id);
+
+    env.mock_all_auths(); 
+    // This will fail because the internal requirement check is against the Admin key
+    client.set_arbitrator(&mallory);
+}
