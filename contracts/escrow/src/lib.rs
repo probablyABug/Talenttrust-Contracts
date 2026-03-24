@@ -72,8 +72,11 @@ impl Escrow {
         milestone_amounts: Vec<i128>,
     ) -> u32 {
         // Validate inputs
-        assert!(!milestone_amounts.is_empty(), "Must have at least one milestone");
-        
+        assert!(
+            !milestone_amounts.is_empty(),
+            "Must have at least one milestone"
+        );
+
         // Validate all milestone amounts are positive
         for amount in milestone_amounts.iter() {
             assert!(amount > 0, "Milestone amounts must be positive");
@@ -126,12 +129,12 @@ impl Escrow {
     /// - Invariant: total_available = total_funded - total_released
     pub fn deposit_funds(_env: Env, _contract_id: u32, amount: i128) -> bool {
         assert!(amount > 0, "Deposit amount must be positive");
-        
+
         // In production: retrieve state from persistent storage
         // Validate caller is client
         // Update funding account
         // Check invariants
-        
+
         true
     }
 
@@ -158,7 +161,7 @@ impl Escrow {
         // Validate sufficient funds available
         // Update funding account
         // Check invariants
-        
+
         true
     }
 
@@ -177,7 +180,7 @@ impl Escrow {
     // ============================================================================
 
     /// Verify funding accounting invariants.
-    /// 
+    ///
     /// # Invariants Checked
     /// 1. total_available = total_funded - total_released
     /// 2. total_released <= total_funded
@@ -765,12 +768,7 @@ mod tests {
         let env = Env::default();
         let client = Address::generate(&env);
         let freelancer = Address::generate(&env);
-        let milestones = vec![
-            &env,
-            i128::MAX / 3,
-            i128::MAX / 3,
-            i128::MAX / 3,
-        ];
+        let milestones = vec![&env, i128::MAX / 3, i128::MAX / 3, i128::MAX / 3];
 
         let id = Escrow::create_contract(env.clone(), client, freelancer, milestones);
         assert_eq!(id, 1);
@@ -808,7 +806,7 @@ mod tests {
         let total_funded = 1_000_000_000_000_000_000_i128;
         let total_released = 500_000_000_000_000_000_i128;
         let total_available = total_funded - total_released;
-        
+
         let funding = FundingAccount {
             total_funded,
             total_released,
