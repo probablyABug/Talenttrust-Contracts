@@ -93,12 +93,18 @@ impl Escrow {
         freelancer: Address,
         milestone_amounts: Vec<i128>,
     ) -> u32 {
-        assert!(!milestone_amounts.is_empty(), "at least one milestone required");
+        assert!(
+            !milestone_amounts.is_empty(),
+            "at least one milestone required"
+        );
 
         let mut milestones: Vec<Milestone> = Vec::new(&env);
         for i in 0..milestone_amounts.len() {
             let amount = milestone_amounts.get(i).unwrap();
-            milestones.push_back(Milestone { amount, released: false });
+            milestones.push_back(Milestone {
+                amount,
+                released: false,
+            });
         }
 
         let next_id: u32 = env
@@ -115,7 +121,9 @@ impl Escrow {
             status: ContractStatus::Created,
         };
 
-        env.storage().persistent().set(&DataKey::Contract(next_id), &escrow);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Contract(next_id), &escrow);
         env.storage().persistent().set(&DataKey::NextId, &next_id);
 
         next_id
@@ -151,7 +159,9 @@ impl Escrow {
         escrow.client.require_auth();
         escrow.status = ContractStatus::Funded;
 
-        env.storage().persistent().set(&DataKey::Contract(contract_id), &escrow);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Contract(contract_id), &escrow);
         true
     }
 
@@ -194,7 +204,9 @@ impl Escrow {
         milestone.released = true;
         escrow.milestones.set(milestone_id, milestone);
 
-        env.storage().persistent().set(&DataKey::Contract(contract_id), &escrow);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Contract(contract_id), &escrow);
         true
     }
 
@@ -229,11 +241,16 @@ impl Escrow {
         // Enforce final-settlement gate: every milestone must be released.
         for i in 0..escrow.milestones.len() {
             let m = escrow.milestones.get(i).unwrap();
-            assert!(m.released, "all milestones must be released before completing");
+            assert!(
+                m.released,
+                "all milestones must be released before completing"
+            );
         }
 
         escrow.status = ContractStatus::Completed;
-        env.storage().persistent().set(&DataKey::Contract(contract_id), &escrow);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Contract(contract_id), &escrow);
         true
     }
 
@@ -295,7 +312,10 @@ impl Escrow {
             .persistent()
             .get(&DataKey::ReputationIssued(contract_id))
             .unwrap_or(false);
-        assert!(!already_issued, "reputation already issued for this contract");
+        assert!(
+            !already_issued,
+            "reputation already issued for this contract"
+        );
 
         // Constraint 5: rating must be in [1, 5].
         assert!(
