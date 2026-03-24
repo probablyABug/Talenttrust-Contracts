@@ -51,6 +51,14 @@ On every push and pull request to `main`, GitHub Actions:
 
 Ensure these pass locally before pushing.
 
+## Milestone Validation Rules
+
+The escrow contract enforces strict milestone validation:
+- At least one milestone must be provided when creating a contract.
+- All milestone amounts must be positive (greater than zero).
+- Milestone indices must be within bounds when releasing a milestone.
+- See [docs/escrow/milestone-validation.md](docs/escrow/milestone-validation.md) for details, security notes, and test coverage.
+
 ## License
 
 MIT
